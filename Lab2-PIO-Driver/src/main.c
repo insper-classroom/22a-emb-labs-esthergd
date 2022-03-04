@@ -218,13 +218,6 @@ void init(void){
 	_pio_set_input(BUT2_PIO, BUT2_PIO_IDX_MASK, _PIO_PULLUP | _PIO_DEBOUNCE);
 	_pio_set_input(BUT3_PIO, BUT3_PIO_IDX_MASK, _PIO_PULLUP | _PIO_DEBOUNCE);
 	
-// 	pio_set_input(BUT1_PIO, BUT1_PIO_IDX_MASK, PIO_DEFAULT);
-// 	pio_set_input(BUT2_PIO, BUT2_PIO_IDX_MASK, PIO_DEFAULT);
-// 	pio_set_input(BUT3_PIO, BUT3_PIO_IDX_MASK, PIO_DEFAULT);
-// 
-// 	_pio_pull_up(BUT1_PIO, BUT1_PIO_IDX_MASK, 1);
-// 	_pio_pull_up(BUT2_PIO, BUT2_PIO_IDX_MASK, 1);
-// 	_pio_pull_up(BUT3_PIO, BUT3_PIO_IDX_MASK, 1);
 }
 
 /************************************************************************/
