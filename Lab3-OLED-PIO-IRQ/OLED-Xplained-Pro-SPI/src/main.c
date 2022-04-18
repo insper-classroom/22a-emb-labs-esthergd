@@ -62,7 +62,7 @@ void pisca_led(Pio*, const uint32_t, int n, int t);
 
 volatile char change_freq;
 volatile char start_flag;
-volatile char decrease_flag;
+volatile char increase_flag;
 
 
 void but_callback(void){
@@ -74,40 +74,40 @@ void but_callback(void){
 	}
 }
 
-void change_oled(int freq) {
-	char freq_str[128];
+void change_oled(int seg) {
+	char seg_str[128];
 	gfx_mono_draw_string("          ", 5, 5, &sysfont);
-	sprintf(freq_str, "%d ms", freq);
-	gfx_mono_draw_string(freq_str, 5, 5, &sysfont);
+	sprintf(seg_str, "%d s", seg);
+	gfx_mono_draw_string(seg_str, 5, 5, &sysfont);
 }
 
 
-int muda_freq(int freq){
-	if(decrease_flag){
-		freq -= 100;
-		change_oled(freq);
-		decrease_flag = 0;
-		return freq;
+int muda_freq(int seg){
+	if(increase_flag){
+		seg += 5;
+		change_oled(seg);
+		increase_flag = 0;
+		return seg;
 	}
 	for(double i =0; i < 2000000; i++){
 		if(!change_freq){
-			freq += 100;
-			change_oled(freq);
-			return freq;
+			seg += 100;
+			change_oled(seg);
+			return seg;
 		}
 	}
 	change_freq = 0;
-	freq -= 100;
-	change_oled(freq);
-	return freq;
+	seg -= 100;
+	change_oled(seg);
+	return seg;
 }
 
 void start_stop_callback(void) {
 	start_flag = 1;
 }
 
-void decrease_freq_callback(void) {
-	decrease_flag = 1;
+void increase_freq_callback(void) {
+	increase_flag = 1;
 }
 
 
@@ -174,7 +174,7 @@ void io_init(void)
 	pio_handler_set(BUT0_PIO, BUT0_PIO_ID, BUT0_IDX_MASK, PIO_IT_EDGE, but_callback);
 	pio_handler_set(BUT1_PIO, BUT1_PIO_ID, BUT1_IDX_MASK, PIO_IT_EDGE, but_callback);
 	pio_handler_set(BUT2_PIO, BUT2_PIO_ID, BUT2_IDX_MASK, PIO_IT_FALL_EDGE, start_stop_callback);
-	pio_handler_set(BUT3_PIO, BUT3_PIO_ID, BUT3_IDX_MASK, PIO_IT_FALL_EDGE, decrease_freq_callback);
+	pio_handler_set(BUT3_PIO, BUT3_PIO_ID, BUT3_IDX_MASK, PIO_IT_FALL_EDGE, increase_freq_callback);
 
 	// Ativa interrupção e limpa primeira IRQ gerada na ativacao
 	pio_enable_interrupt(BUT0_PIO, BUT0_IDX_MASK);
@@ -202,35 +202,35 @@ int main (void)
 {
 	io_init();
 	
-	int freq = 500;
+	int seg = 0;
 
 	// Init OLED
 	gfx_mono_ssd1306_init();
 	
 	pio_set(LED2_PIO, LED2_PIO_IDX_MASK);
 	
-	char str_freq[128];
-	sprintf(str_freq, freq);
+	char str_seg[128];
+	sprintf(str_seg, seg);
 	gfx_mono_draw_string("            ", 5, 5, &sysfont);
-	gfx_mono_draw_string(str_freq, 5, 5, &sysfont);
+	gfx_mono_draw_string(str_seg, 5, 5, &sysfont);
 
 	/* Insert application code here, after the board has been initialized. */
 	while(1) {
-		if(change_freq || start_flag || decrease_flag) {
+		if(change_freq || start_flag || increase_flag) {
 			if(change_freq) {
-				freq = muda_freq(freq);
+				seg = muda_freq(seg);
 			}
-			else if(decrease_flag) {
-				freq = muda_freq(freq);
+			else if(increase_flag) {
+				seg = muda_freq(seg);
 			}
 			else if(start_flag) {
 				start_flag = 0;
-				pisca_led(LED2_PIO, LED2_PIO_IDX_MASK, 30, freq);
+				pisca_led(LED2_PIO, LED2_PIO_IDX_MASK, 30, seg);
 			}
 
 			change_freq = 0;
 			start_flag = 0;
-			decrease_flag = 0;
+			increase_flag = 0;
 		}
 		pmc_sleep(SAM_PM_SMODE_SLEEP_WFI);
 	}
